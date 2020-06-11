@@ -25,7 +25,10 @@ import fi.iki.elonen.NanoHTTPD;
 public class PushpinGWProxy extends NanoHTTPD {
 	
 	@Autowired
-	private SubscriptionHandler subscriptionHandler;
+	private SubscriptionHandlerforNode1 subscriptionHandler;
+	
+	@Autowired
+	private ChannelRepository channelRepository;
     
 
 	public PushpinGWProxy() throws IOException {
@@ -40,8 +43,8 @@ public class PushpinGWProxy extends NanoHTTPD {
 	}
 	
 	@Bean
-	public SubscriptionHandler subscriptionHandler() {
-		SubscriptionHandler st= new SubscriptionHandler();
+	public SubscriptionHandlerforNode1 subscriptionHandler() {
+		SubscriptionHandlerforNode1 st= new SubscriptionHandlerforNode1();
 		st.disconnectHanlder();
 		return st;
 	}
@@ -71,7 +74,7 @@ public class PushpinGWProxy extends NanoHTTPD {
 		public void run() {
 
 			Map<String, Object> entry = new HashMap<String, Object>();
-			entry.put("control_uri", "http://localhost:5561");
+			entry.put("control_uri", "http://pushpin-svc:5561");
 			List<Map<String, Object>> config = Arrays.asList(entry);
 			GripPubControl pub = new GripPubControl(config);
 			List<String> channels = Arrays.asList(channel);
@@ -94,6 +97,9 @@ public class PushpinGWProxy extends NanoHTTPD {
 		 * "changeme")) return newFixedLengthResponse(Response.Status.UNAUTHORIZED,
 		 * null, "invalid grip-sig token");
 		 */
+		
+		System.out.println("====================");
+		channelRepository.deleteById("ch3");
 
 		// Only allow the POST method:
 		Method method = session.getMethod();
