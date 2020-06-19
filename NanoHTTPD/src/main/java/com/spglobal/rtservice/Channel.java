@@ -3,20 +3,13 @@ package com.spglobal.rtservice;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
-@Entity
-@Table(name = "pushpin_subscription")
 public class Channel implements Serializable {
 
-	@Id
-	@Column(name = "channel")
+	
 	private String channel;
 
-	@Column(name = "nodes")
+	
 	private String nodes[];
 	
 

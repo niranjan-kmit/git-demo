@@ -37,8 +37,6 @@ spec:
           - name: dbsql
             mountPath: "/dbsql"
       containers:
-      - name: postgress
-        image: nnallapu/db-init-script:1.0  
       - name: pushpin-java-backend
         image: nnallapu/rt-backend-java-service:1.0
         name: pushpin-java-backend

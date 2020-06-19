@@ -3,12 +3,10 @@ package com.spglobal.rtservice;
 import java.io.File;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -41,7 +39,7 @@ public class SubscriptionHandlerforNode3 extends ZContext {
 			ZMQ.Socket socket = context.createSocket(SocketType.XPUB);
 			socket.setRcvHWM(0);
 			socket.setImmediate(true);
-			socket.connect("tcp://pushpin-svc:5562");
+			socket.connect("tcp://localhost:5562");
 
 			while (true) {
                 

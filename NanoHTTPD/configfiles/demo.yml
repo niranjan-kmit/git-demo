@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pushpin-config
+data:
+  routes: |
+    *,proto=ws localhost:8000,over_http
+    *,proto=http localhost:8080
+
+---    
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mc1
+spec:
+  volumes:
+  - name: si1-cliam
+    emptyDir: {}
+  - name: si2-cliam
+    emptyDir: {}
+  - name: pushpin-config
+    configMap:
+      name: pushpin-config
+
+  containers:
+  - name: 1st
+    image: nnallapu/rt-connect:1.5
+    ports:
+    - containerPort: 8000
+    - containerPort: 8090
+    volumeMounts:
+    - name: si1-cliam
+      mountPath: /siddhi-files/si-efs-one
+    - name: si2-cliam
+      mountPath: /siddhi-files/si-efs-two
+  - name: 2nd
+    image: siddhiio/siddhi-tooling:5.1.0
+    ports:
+    - containerPort: 9390
+    volumeMounts:
+    - name: si1-cliam
+      mountPath: /home/siddhi_user/siddhi-tooling/wso2/tooling/deployment/workspace
+  - name: 3rd
+    image: siddhiio/siddhi-runner-alpine:latest
+    ports:
+    - containerPort: 8006
+    - containerPort: 9090
+    - containerPort: 9443
+    volumeMounts:
+    - name: si2-cliam
+      mountPath: /home/siddhi_user/siddhi-runner/wso2/runner/deployment/siddhi-files
+  - name: 4th
+    image: fanout/pushpin
+    ports:
+    - containerPort: 7999
+    - containerPort: 5560
+    - containerPort: 5561
+    - containerPort: 5562
+    volumeMounts:
+    - name: pushpin-config
+      mountPath: /etc/pushpin/routes
+      subPath: routes
+
+
+--- 
+  
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: pushpin-svc
+    spec:
+      selector:
+        app: 4th
+      clusterIP: None
+      ports:
+      - name: http
+        port: 7999
+        targetPort: 7999
+      - name: http1
+        port: 5560
+        targetPort: 5560  
+      - name: http2
+        port: 5561
+        targetPort: 5561
+      - name: http3
+        port: 5562
+        targetPort: 5562          
+---   
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushpin-backend-svc
+spec:
+  selector:
+    app: 1st
+  clusterIP: None
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+   
+    

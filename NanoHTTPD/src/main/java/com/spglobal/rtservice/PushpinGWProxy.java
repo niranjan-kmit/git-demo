@@ -23,46 +23,39 @@ import fi.iki.elonen.NanoHTTPD;
 
 @SpringBootApplication
 public class PushpinGWProxy extends NanoHTTPD {
-	
+
 	@Autowired
 	private SubscriptionHandlerforNode1 subscriptionHandler;
-	
-	@Autowired
-	private ChannelRepository channelRepository;
-    
 
 	public PushpinGWProxy() throws IOException {
 		super(8000);
 		start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
 		System.out.println("Server Started at Port:" + 8000);
-		
-		
-		
-		//new SubscriptionHandler();
-		
+
+		// new SubscriptionHandler();
+
 	}
-	
+
 	@Bean
 	public SubscriptionHandlerforNode1 subscriptionHandler() {
-		SubscriptionHandlerforNode1 st= new SubscriptionHandlerforNode1();
+		SubscriptionHandlerforNode1 st = new SubscriptionHandlerforNode1();
 		st.disconnectHanlder();
 		return st;
 	}
-	
+
 	@Bean
 	public WSO2ManagerService managerService() {
 		return new WSO2ManagerService();
 	}
-	
-	
+
 	public static void main(String[] args) {
-		
-			SpringApplication.run(PushpinGWProxy.class, args);
-			
-			//new PushpinGWProxy();
-		
+
+		SpringApplication.run(PushpinGWProxy.class, args);
+
+		// new PushpinGWProxy();
+
 	}
-	
+
 	// A helper class for publishing a message on a separate thread:
 	private class PublishMessage implements Runnable {
 		String channel;
@@ -74,7 +67,7 @@ public class PushpinGWProxy extends NanoHTTPD {
 		public void run() {
 
 			Map<String, Object> entry = new HashMap<String, Object>();
-			entry.put("control_uri", "http://pushpin-svc:5561");
+			entry.put("control_uri", "http://localhost:5561");
 			List<Map<String, Object>> config = Arrays.asList(entry);
 			GripPubControl pub = new GripPubControl(config);
 			List<String> channels = Arrays.asList(channel);
@@ -97,9 +90,7 @@ public class PushpinGWProxy extends NanoHTTPD {
 		 * "changeme")) return newFixedLengthResponse(Response.Status.UNAUTHORIZED,
 		 * null, "invalid grip-sig token");
 		 */
-		
-		System.out.println("====================");
-		channelRepository.deleteById("ch3");
+
 
 		// Only allow the POST method:
 		Method method = session.getMethod();
@@ -134,16 +125,21 @@ public class PushpinGWProxy extends NanoHTTPD {
 	private Response connectHandler(IHTTPSession session, List<WebSocketEvent> inEvents) {
 		Map<String, String> headersMap = session.getHeaders();
 
-		/*if (!TokenValidation.verifyTokenfromService(session.getHeaders().get("authorization"))) {
+		String token = session.getHeaders().get("Cookie");
+		if (token == null) {
+			token = session.getHeaders().get("authorization");
+		}
+
+		if (!TokenValidation.verifyTokenfromService(token)) {
 			return newFixedLengthResponse(Response.Status.UNAUTHORIZED, null, "invalid token");
-		}*/
+		}
 
 		String responseBody = "";
 		if (inEvents != null && inEvents.size() > 0 && inEvents.get(0).type.equals("OPEN")) {
 			// create channel name based on connection
 			String connectionId = headersMap.get("connection-id");
 			String channelId = connectionId + "_channelid";
-			channelId="ABCD";
+			channelId = "ch1";
 
 			System.out.println("Channel Id:" + channelId);
 			// Create channel hash map:

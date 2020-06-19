@@ -1,6 +1,12 @@
 package com.spglobal.rtservice;
 
 import java.io.File;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -14,10 +20,16 @@ import org.apache.http.impl.client.HttpClientBuilder;
 public class WSO2ManagerService {
 
 	public String siddhiManagerUrl = "https://api-platform-nlb-ae946719a7c2d254.elb.us-east-1.amazonaws.com/siddhi-apps";
-
+	
 	public WSO2ManagerService() {
 
 	}
+	
+	/*
+	 * public static void main(String argv[]) { File dirFile = new
+	 * File("F:\\Siddhi_work\\siddhi-files"); new
+	 * WSO2ManagerService().deletingFilesRecursively(dirFile, "ABCD.siddhi"); }
+	 */
 
 	public boolean deleteSiddhiAppfromManager(String siddhiAppId) {
 		siddhiManagerUrl = siddhiManagerUrl + "/" + siddhiAppId;
@@ -58,15 +70,40 @@ public class WSO2ManagerService {
 	}
 
 	public void deletingFilesRecursively(File rootPath, String file) {
-		file = file + ".siddhi";
+		//file = file + ".siddhi";
 		for (File subFile : rootPath.listFiles()) {
 			if (subFile.isDirectory()) {
 				deletingFilesRecursively(subFile, file);
 			} else if (subFile.isFile() && subFile.getName().equals(file)) {
 				subFile.delete();
+				System.out.println("file name :"+file+"was removed.");
 			}
 		}
 
+	}
+	
+	public  boolean validateWithAllNodes() {
+		try (Connection connection = DriverManager.getConnection("jdbc:postgresql://postgres-service:5432/pushpin-tracker",
+				"rtuser", "rtpassword")) {
+
+			System.out.println("Connected to PostgreSQL database!");
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement
+					.executeQuery("SELECT * FROM public.pushpin_subscription WHERE channel='ch1'");
+			while (resultSet.next()) {
+				System.out.printf("deleted channel", resultSet.getString("channel"));
+				Array nodesArr = resultSet.getArray("nodes");
+				String[] nodes = (String[]) nodesArr.getArray();
+			    //System.out.printf("%-30.30s", nodes);
+				return nodes.length > 0;
+
+			}
+
+		} catch (SQLException e) {
+			System.out.println("Connection failure.");
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 }

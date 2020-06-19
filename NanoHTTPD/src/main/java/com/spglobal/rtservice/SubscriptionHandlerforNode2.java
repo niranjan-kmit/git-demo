@@ -41,7 +41,7 @@ public class SubscriptionHandlerforNode2 extends ZContext {
 			ZMQ.Socket socket = context.createSocket(SocketType.XPUB);
 			socket.setRcvHWM(0);
 			socket.setImmediate(true);
-			socket.connect("tcp://pushpin-svc:5562");
+			socket.connect("tcp://localhost:5562");
 
 			while (true) {
                 

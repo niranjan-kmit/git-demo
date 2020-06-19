@@ -1,0 +1,113 @@
+# Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wso2si-worker-1
+  labels:
+    app: wso2si-worker-1
+    node: wso2si-worker-1
+    pattern: wso2si-active-active
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wso2si-worker-1
+        node: wso2si-worker-1
+        pattern: wso2si-active-active
+    spec:
+      initContainers:
+      - name: init
+        image: ccbeloy/si-init:1.0
+        command: ['sh', '-c', cp /jars/* /si-extra-jars/]
+        volumeMounts:
+        - name: si-extra-jars
+          mountPath: "/si-extra-jars"
+      containers:
+      -
+        image: wso2/streaming-integrator:1.0.0
+        name: wso2si-worker-1
+        imagePullPolicy: Always
+        securityContext:
+          runAsUser: 802
+        resources:
+          limits:
+            memory: "2Gi"
+          requests:
+            memory: "2Gi"
+        command: ['sh', '-c', sleep 60 && cp -RL /home/wso2carbon/wso2-config-volume/* /home/wso2carbon/wso2si/ && cp -RL /home/wso2carbon/wso2-bin-volume/* /home/wso2carbon/wso2si/ && chmod +x /home/wso2carbon/wso2si/wso2/server/bin/carbon.sh && /home/wso2carbon/wso2si/bin/server.sh]
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        -
+          name: NODE_PORT
+          value: "9443"
+
+        ports:
+        -
+          containerPort: 9090
+          protocol: "TCP"
+        -
+          containerPort: 9443
+          protocol: "TCP"
+        -
+          containerPort: 7070
+          protocol: "TCP"
+        -
+          containerPort: 7443
+          protocol: "TCP"        
+        -
+          containerPort: 9712
+          protocol: "TCP"
+        -
+          containerPort: 7711
+          protocol: "TCP"
+        -
+          containerPort: 7611
+          protocol: "TCP"
+        volumeMounts:
+        - name: si-worker-conf
+          mountPath: "/home/wso2carbon/wso2-config-volume/conf/server/"
+        - name: si-worker-bin
+          mountPath: "/home/wso2carbon/wso2-bin-volume/wso2/server/bin/"
+        - name: si-extra-jars
+          mountPath: "/home/wso2carbon/wso2-bin-volume/lib/"
+        - name: si-worker-storage-volume
+          mountPath: "/home/wso2carbon/wso2si/wso2/server/deployment/siddhi-files/"  
+        livenessProbe:
+          tcpSocket:
+            port: 9443
+          initialDelaySeconds: 70
+          periodSeconds: 20
+      serviceAccountName: "wso2svcacct"
+      volumes:
+      - name: si-extra-jars
+        emptyDir: {}
+      - name: si-worker-conf
+        configMap:
+          name: si-worker-conf
+      - name: si-worker-bin
+        configMap:
+          name: si-worker-bin
+      - name: si-worker-storage-volume
+        persistentVolumeClaim:
+          claimName: si-worker-1-volume-claim   
+      #nodeSelector:#
+        #platts-node-group:#

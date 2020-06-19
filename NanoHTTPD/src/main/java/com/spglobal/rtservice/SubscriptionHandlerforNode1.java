@@ -39,22 +39,26 @@ public class SubscriptionHandlerforNode1 extends ZContext {
 			ZMQ.Socket socket = context.createSocket(SocketType.XPUB);
 			socket.setRcvHWM(0);
 			socket.setImmediate(true);
-			socket.connect("tcp://pushpin-svc:5562");
+			socket.connect("tcp://localhost:5562");
 
 			while (true) {
-                
+
 				byte[] srr = socket.recv();
 				int type = (int) srr[0];
 				byte[] topic = Arrays.copyOfRange(srr, 1, srr.length);
 				String topicName = new String(topic);
 
 				if (0 == type) {
-					managerService.deletingFilesRecursively(dirFile, topicName);
-					System.out.println(publisher_url+" UNSUB=====>" + topicName);
+
+					if (!managerService.validateWithAllNodes()) {
+						managerService.deletingFilesRecursively(dirFile, topicName + ".siddhi");
+					}
+
+					//managerService.deletingFilesRecursively(dirFile, topicName + ".siddhi");
+					System.out.println(publisher_url + " UNSUB=====>" + topicName);
 				} else {
 					System.out.println("  SUB=====>" + topicName);
 				}
-				
 
 			}
 		}

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pushpin-config
+data:
+  routes: |
+    *,proto=ws pushpin-backend-svc:8000,over_http
+    *,proto=http localhost:8080

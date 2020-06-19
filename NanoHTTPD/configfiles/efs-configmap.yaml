@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: efs-provisioner
+  labels:
+    pattern: wso2sp-pattern-distributed
+data:
+  file.system.id: fs-d2f7ef52
+  aws.region: us-east-1
+  provisioner.name: example.com/aws-efs
+  dns.name: "10.164.99.107"
